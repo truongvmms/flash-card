@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK Flash Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .card {
+            perspective: 1000px;
+            height: 250px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card.highlight {
+            transform: scale(1.05);
+        }
+
+        .card.highlight .card-inner {
+            box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .card.dimmed {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+            transform: rotateY(180deg);
+            color: white;
+        }
+
+        .chinese {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .pinyin {
+            font-size: 1.2rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .vietnamese {
+            font-size: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .hsk-level {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .card-back .hsk-level {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .instruction {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .card {
+                height: 200px;
+            }
+            
+            .chinese {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎴 HSK Flash Cards</h1>
+        <p class="instruction">Nhập từ để tìm kiếm • Click vào thẻ để xem nghĩa tiếng Việt</p>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm từ vựng HSK...">
+        </div>
+        
+        <div class="cards-grid" id="cardsGrid">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const hskWords = [
+            { chinese: "你好", pinyin: "nǐ hǎo", vietnamese: "Xin chào", level: "HSK1" },
+            { chinese: "谢谢", pinyin: "xiè xie", vietnamese: "Cảm ơn", level: "HSK1" },
+            { chinese: "再见", pinyin: "zài jiàn", vietnamese: "Tạm biệt", level: "HSK1" },
+            { chinese: "我", pinyin: "wǒ", vietnamese: "Tôi", level: "HSK1" },
+            { chinese: "你", pinyin: "nǐ", vietnamese: "Bạn", level: "HSK1" },
+            { chinese: "他", pinyin: "tā", vietnamese: "Anh ấy", level: "HSK1" },
+            { chinese: "她", pinyin: "tā", vietnamese: "Cô ấy", level: "HSK1" },
+            { chinese: "是", pinyin: "shì", vietnamese: "Là", level: "HSK1" },
+            { chinese: "不", pinyin: "bù", vietnamese: "Không", level: "HSK1" },
+            { chinese: "很", pinyin: "hěn", vietnamese: "Rất", level: "HSK1" },
+            { chinese: "好", pinyin: "hǎo", vietnamese: "Tốt", level: "HSK1" },
+            { chinese: "爱", pinyin: "ài", vietnamese: "Yêu", level: "HSK1" },
+            { chinese: "中国", pinyin: "zhōng guó", vietnamese: "Trung Quốc", level: "HSK1" },
+            { chinese: "人", pinyin: "rén", vietnamese: "Người", level: "HSK1" },
+            { chinese: "家", pinyin: "jiā", vietnamese: "Nhà, gia đình", level: "HSK1" },
+            
+            { chinese: "时间", pinyin: "shí jiān", vietnamese: "Thời gian", level: "HSK2" },
+            { chinese: "工作", pinyin: "gōng zuò", vietnamese: "Công việc", level: "HSK2" },
+            { chinese: "学习", pinyin: "xué xí", vietnamese: "Học tập", level: "HSK2" },
+            { chinese: "朋友", pinyin: "péng you", vietnamese: "Bạn bè", level: "HSK2" },
+            { chinese: "快乐", pinyin: "kuài lè", vietnamese: "Vui vẻ", level: "HSK2" },
+            { chinese: "漂亮", pinyin: "piào liang", vietnamese: "Đẹp", level: "HSK2" },
+            { chinese: "帮助", pinyin: "bāng zhù", vietnamese: "Giúp đỡ", level: "HSK2" },
+            { chinese: "问题", pinyin: "wèn tí", vietnamese: "Vấn đề, câu hỏi", level: "HSK2" },
+            { chinese: "准备", pinyin: "zhǔn bèi", vietnamese: "Chuẩn bị", level: "HSK2" },
+            { chinese: "已经", pinyin: "yǐ jīng", vietnamese: "Đã", level: "HSK2" },
+            
+            { chinese: "经验", pinyin: "jīng yàn", vietnamese: "Kinh nghiệm", level: "HSK3" },
+            { chinese: "环境", pinyin: "huán jìng", vietnamese: "Môi trường", level: "HSK3" },
+            { chinese: "历史", pinyin: "lì shǐ", vietnamese: "Lịch sử", level: "HSK3" },
+            { chinese: "文化", pinyin: "wén huà", vietnamese: "Văn hóa", level: "HSK3" },
+            { chinese: "健康", pinyin: "jiàn kāng", vietnamese: "Sức khỏe", level: "HSK3" },
+            { chinese: "舒服", pinyin: "shū fu", vietnamese: "Thoải mái", level: "HSK3" },
+            { chinese: "努力", pinyin: "nǔ lì", vietnamese: "Nỗ lực", level: "HSK3" },
+            { chinese: "成功", pinyin: "chéng gōng", vietnamese: "Thành công", level: "HSK3" },
+            { chinese: "机会", pinyin: "jī huì", vietnamese: "Cơ hội", level: "HSK3" },
+            { chinese: "重要", pinyin: "zhòng yào", vietnamese: "Quan trọng", level: "HSK3" },
+            
+            // HSK 4
+            { chinese: "经济", pinyin: "jīng jì", vietnamese: "Kinh tế", level: "HSK4" },
+            { chinese: "科技", pinyin: "kē jì", vietnamese: "Khoa học công nghệ", level: "HSK4" },
+            { chinese: "社会", pinyin: "shè huì", vietnamese: "Xã hội", level: "HSK4" },
+            { chinese: "自然", pinyin: "zì rán", vietnamese: "Tự nhiên", level: "HSK4" },
+            { chinese: "传统", pinyin: "chuán tǒng", vietnamese: "Truyền thống", level: "HSK4" },
+            { chinese: "教育", pinyin: "jiào yù", vietnamese: "Giáo dục", level: "HSK4" },
+            { chinese: "发展", pinyin: "fā zhǎn", vietnamese: "Phát triển", level: "HSK4" },
+            { chinese: "责任", pinyin: "zé rèn", vietnamese: "Trách nhiệm", level: "HSK4" },
+            { chinese: "勇敢", pinyin: "yǒng gǎn", vietnamese: "Dũng cảm", level: "HSK4" },
+            { chinese: "梦想", pinyin: "mèng xiǎng", vietnamese: "Ước mơ", level: "HSK4" },
+        ];
+
+        const cardsGrid = document.getElementById('cardsGrid');
+        const searchInput = document.getElementById('searchInput');
+
+        function generateCards() {
+            cardsGrid.innerHTML = '';
+            
+            hskWords.forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <span class="hsk-level">${word.level}</span>
+                            <div class="chinese">${word.chinese}</div>
+                            <div class="pinyin">${word.pinyin}</div>
+                        </div>
+                        <div class="card-back">
+                            <span class="hsk-level">${word.level}</span>
+                            <div class="vietnamese">${word.vietnamese}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Click to flip
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                });
+                
+                cardsGrid.appendChild(card);
+            });
+        }
+
+        // Search Function
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.card');
+            
+            if (searchTerm === '') {
+                // Reset all cards
+                cards.forEach(card => {
+                    card.classList.remove('highlight', 'dimmed');
+                });
+                return;
+            }
+            
+            cards.forEach(card => {
+                const index = card.dataset.index;
+                const word = hskWords[index];
+                
+                // Search in chinese, pinyin, vietnamese
+                const isMatch = 
+                    word.chinese.includes(searchTerm) ||
+                    word.pinyin.toLowerCase().includes(searchTerm) ||
+                    word.vietnamese.toLowerCase().includes(searchTerm) ||
+                    word.level.toLowerCase().includes(searchTerm);
+                
+                if (isMatch) {
+                    card.classList.add('highlight');
+                    card.classList.remove('dimmed');
+                } else {
+                    card.classList.remove('highlight');
+                    card.classList.add('dimmed');
+                }
+            });
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', handleSearch);
+
+        // Initialize
+        generateCards();
+    </script>
+</body>
+</html>
